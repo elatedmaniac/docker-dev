@@ -29,4 +29,7 @@ docker-compose run --build
 
 - Draw.io: https://hub.docker.com/r/jgraph/drawio
 - Nginx: https://hub.docker.com/_/nginx
-- 
+- Neo4J: https://hub.docker.com/_/neo4j
+- Nvidia CUDA & Jupyter: https://hub.docker.com/r/nvidia/cuda
+- Ollama: https://hub.docker.com/r/ollama/ollama
+- Trivy: https://hub.docker.com/r/aquasec/trivy
