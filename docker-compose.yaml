@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  drawio:
+    build:
+      context: .
+      dockerfile: drawio/Dockerfile
+    container_name: drawio
+    ports:
+      - "8080:8080"
+  anaconda:
+    build:
+      context: .
+      dockerfile: Jupyter/Dockerfile
+    container_name: anaconda_container
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./Jupyter/data:/workspace
+      - ./logs:/workspace/logs
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+  neo4j:
+    build:
+      context: ./neo4j
+      args:
+        NEO4J_AUTH: ${NEO4J_AUTH}
+    container_name: neo4j_container
+    ports:
+      - "7474:7474"   # HTTP
+      - "7473:7473"   # HTTPS
+      - "7687:7687"   # Bolt
+    environment:
+      - NEO4J_AUTH=${NEO4J_AUTH}
+      - NEO4J_PLUGINS=${NEO4J_PLUGINS}
+    volumes:
+      #- ./neo4j/data:/data
+      - ./neo4j/logs:/logs
+      - ./neo4j/import:/import
+      - ./neo4j/plugins:/plugins
+      - ./neo4j/certificates:/var/lib/neo4j/certificates
+  nginx:
+    build:
+      context: ./Nginx
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - anaconda
+      - drawio
+networks:
+  default:
+    driver: bridge
+
