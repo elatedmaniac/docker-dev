@@ -26,6 +26,19 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
+  ollama: 
+    build:
+      context: ./ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama/data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
   neo4j:
     build:
       context: ./neo4j

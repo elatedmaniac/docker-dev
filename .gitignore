@@ -1,5 +1,5 @@
 # neo4j exclusions
-/neo4j/data/*
+**/data/*
 *.key
 *.i
 *.ii
