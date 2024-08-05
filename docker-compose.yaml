@@ -1,13 +1,17 @@
-version: '3.8'
+version: '3.9'
 
 services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run --token ${CLOUDFLARE_TOKEN}
+    container_name: cloudflared
+
   drawio:
-    build:
-      context: .
-      dockerfile: drawio/Dockerfile
-    container_name: drawio
+    image: jgraph/drawio:latest
+    container_name: drawio_container
     ports:
       - "8080:8080"
+
   anaconda:
     build:
       context: .
@@ -26,9 +30,9 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
-  ollama: 
-    build:
-      context: ./ollama
+
+  ollama:
+    image: ollama/ollama:latest 
     container_name: ollama
     ports:
       - "11434:11434"
@@ -39,6 +43,7 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
+
   neo4j:
     build:
       context: ./neo4j
@@ -58,6 +63,7 @@ services:
       - ./neo4j/import:/import
       - ./neo4j/plugins:/plugins
       - ./neo4j/certificates:/var/lib/neo4j/certificates
+
   nginx:
     build:
       context: ./Nginx
@@ -65,10 +71,17 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      - ./nginx/certificates:/etc/nginx/certificates
     depends_on:
       - anaconda
       - drawio
+      - cloudflared
+      - ollama
+      - neo4j
+
 networks:
   default:
     driver: bridge
+
 

@@ -1,6 +1,7 @@
 # neo4j exclusions
 **/data/*
 *.key
+*.pem
 *.i
 *.ii
 *.gpu
