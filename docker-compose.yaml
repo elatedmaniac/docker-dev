@@ -1,17 +1,28 @@
 version: '3.9'
-
 services:
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    command: tunnel run --token ${CLOUDFLARE_TOKEN}
-    container_name: cloudflared
-
   drawio:
     image: jgraph/drawio:latest
     container_name: drawio_container
     ports:
       - "8080:8080"
-
+    networks:
+      default:
+        ipv4_address: 172.18.0.2
+  ollama:
+    image: ollama/ollama:latest 
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama/data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    networks:
+      default:
+        ipv4_address: 172.18.0.3
   anaconda:
     build:
       context: .
@@ -30,20 +41,17 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
-
-  ollama:
-    image: ollama/ollama:latest 
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ./ollama/data:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-
+    networks:
+      default:
+        ipv4_address: 172.18.0.4
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run --token ${CLOUDFLARE_TOKEN}
+    container_name: cloudflared
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: 172.18.0.5
   neo4j:
     build:
       context: ./neo4j
@@ -63,7 +71,9 @@ services:
       - ./neo4j/import:/import
       - ./neo4j/plugins:/plugins
       - ./neo4j/certificates:/var/lib/neo4j/certificates
-
+    networks:
+      default:
+        ipv4_address: 172.18.0.6
   nginx:
     build:
       context: ./Nginx
@@ -79,9 +89,16 @@ services:
       - cloudflared
       - ollama
       - neo4j
+    networks:
+      default:
+        ipv4_address: 172.18.0.7
 
 networks:
   default:
+    name: lab_network
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
 
 

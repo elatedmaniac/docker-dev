@@ -9,12 +9,22 @@ This project is aimed at creating a local, Dockerized environment for ML and Dev
 docker-compose run --build
 ```
 
+### Endpoints
+
+- Ollama: `http://localhost:11434/api/generate -d '{ "model": "codellama:7b-code", "prompt": "# Write a Hello World Next.js app" }'`
+- Neo4j: 
+
 ## References
 
 ### General Dev References
 
 - .gitignore from GitHub: https://github.com/github/gitignore/tree/main
 - Create an [automatically updating CHANGELOG](https://mokkapps.de/blog/how-to-automatically-generate-a-helpful-changelog-from-your-git-commit-messages)
+- CloudFlared registry key on Windows host: [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Application\Cloudflared]
+  
+### Security
+
+- OAuth + Jupyter: https://tljh.jupyter.org/en/latest/howto/auth/google.html
 
 ### Networking
 

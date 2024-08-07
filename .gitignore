@@ -1,5 +1,6 @@
 # neo4j exclusions
 **/data/*
+**/notebooks/*
 *.key
 *.pem
 *.i
