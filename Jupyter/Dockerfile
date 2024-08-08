@@ -1,5 +1,5 @@
 # Use the official NVIDIA CUDA image as a base
-FROM nvidia/cuda:12.5.0-devel-ubuntu22.04 AS base
+FROM nvidia/cuda:12.5.0-devel-ubuntu22.04
 
 # Set environment variables
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
@@ -35,21 +35,16 @@ RUN conda install -y python=3.11 \
     jupyterlab \
     neo4j \
     pandas \
-    seaborn \
     && apt-get update -y && apt upgrade -y
 
-FROM base 
-
-# Create a working directory
-WORKDIR /scripts
-
-# Copy entrypoint script
-COPY /scripts/entrypoint-logs.sh /scripts/entrypoint.sh
-RUN chmod +x /scripts/entrypoint.sh
+# Copy Jupyter configuration and certificates
+COPY --chmod=644 certs* ./certs/
+RUN jupyter notebook --generate-config
+COPY jupyter_notebook_config.py /root/.jupyter/
+COPY sample-notebooks/* /notebooks/
 
 # Expose port for Jupyter Notebook
 EXPOSE 8888
 
 # Set the entrypoint to the script
-ENTRYPOINT ["/scripts/entrypoint.sh"]
-
+CMD ["jupyter", "notebook", "--allow-root", "--notebook-dir=/notebooks"]

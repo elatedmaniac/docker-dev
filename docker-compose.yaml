@@ -1,5 +1,14 @@
-version: '3.9'
+version: '3.8'
+
 services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run --token ${CLOUDFLARE_TOKEN}
+    container_name: cloudflared
+    networks:
+      default:
+        ipv4_address: 172.18.0.2
+
   drawio:
     image: jgraph/drawio:latest
     container_name: drawio_container
@@ -7,7 +16,31 @@ services:
       - "8080:8080"
     networks:
       default:
-        ipv4_address: 172.18.0.2
+        ipv4_address: 172.18.0.3
+
+  anaconda:
+    build:
+      context: .
+      dockerfile: Jupyter/Dockerfile
+    container_name: anaconda_container
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./Jupyter/data:/workspace
+      - ./logs:/workspace/logs
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - JUPYTER_PASSWORD=${JUPYTER_PASSWORD}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    networks:
+      default:
+        ipv4_address: 172.18.0.4
+
   ollama:
     image: ollama/ollama:latest 
     container_name: ollama
@@ -22,36 +55,8 @@ services:
             - capabilities: [gpu]
     networks:
       default:
-        ipv4_address: 172.18.0.3
-  anaconda:
-    build:
-      context: .
-      dockerfile: Jupyter/Dockerfile
-    container_name: anaconda_container
-    ports:
-      - "8888:8888"
-    volumes:
-      - ./Jupyter/data:/workspace
-      - ./logs:/workspace/logs
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    networks:
-      default:
-        ipv4_address: 172.18.0.4
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    command: tunnel run --token ${CLOUDFLARE_TOKEN}
-    container_name: cloudflared
-    restart: unless-stopped
-    networks:
-      default:
         ipv4_address: 172.18.0.5
+
   neo4j:
     build:
       context: ./neo4j
@@ -74,6 +79,7 @@ services:
     networks:
       default:
         ipv4_address: 172.18.0.6
+
   nginx:
     build:
       context: ./Nginx
@@ -86,19 +92,23 @@ services:
     depends_on:
       - anaconda
       - drawio
-      - cloudflared
-      - ollama
-      - neo4j
     networks:
       default:
         ipv4_address: 172.18.0.7
 
+  streamlit:
+    build:
+      context: ./streamlit
+    container_name: streamlit_manager
+    ports:
+      - "8501:8501"
+    networks:
+      default:
+        ipv4_address: 172.18.0.8
+
 networks:
   default:
-    name: lab_network
     driver: bridge
     ipam:
       config:
         - subnet: 172.18.0.0/24
-
-
