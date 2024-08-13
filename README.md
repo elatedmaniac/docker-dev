@@ -22,7 +22,7 @@ docker-compose run --build
 - Create an [automatically updating CHANGELOG](https://mokkapps.de/blog/how-to-automatically-generate-a-helpful-changelog-from-your-git-commit-messages)
 - CloudFlared registry key on Windows host: [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Application\Cloudflared]
 - To get the dependencies for a particular Python module: `pip show <module_name>`
-- Creating new certificates for TLS: `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./Jupyter/certificates/jupyter.key -out ./Jupyter/certificates/jupyter.crt -subj "/C=GR/ST=Attica/L=Athens/O=Olympus/OU=Gods/CN=jupyter.domain.io"`  
+- Creating new certificates for TLS: `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./Nginx/certificates/dev.elatedmaniac.io.key -out ./Nginx/certificates/dev.elatedmaniac.io.crt -subj "/C=GR/ST=Attica/L=Athens/O=Olympus/OU=Gods/CN=dev.elatedmaniac.io"`  
 - 
 
 ### Security

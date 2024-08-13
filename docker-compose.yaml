@@ -13,7 +13,10 @@ services:
     image: jgraph/drawio:latest
     container_name: drawio_container
     ports:
-      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - PUBLIC_DNS=drawio.elatedmaniac.io
+      - LETS_ENCRYPT_ENABLED=true
     networks:
       default:
         ipv4_address: 172.18.0.3
@@ -27,6 +30,8 @@ services:
       - "8888:8888"
     volumes:
       - ./Jupyter/data:/workspace
+      - ./Jupyter/certs:/root/.jupyter/ssl
+      - ./Jupyter/config/jupyter_application_config.py/:/root/.jupyter/jupyter_application_config.py
       - ./logs:/workspace/logs
     environment:
       - NVIDIA_VISIBLE_DEVICES=all

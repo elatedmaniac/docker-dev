@@ -38,13 +38,19 @@ RUN conda install -y python=3.11 \
     && apt-get update -y && apt upgrade -y
 
 # Copy Jupyter configuration and certificates
-COPY --chmod=644 certs* ./certs/
 RUN jupyter notebook --generate-config
-COPY jupyter_notebook_config.py /root/.jupyter/
-COPY sample-notebooks/* /notebooks/
+
+RUN mkdir ~/.jupyter/ssl
+
+COPY /Jupyter/certs/* /root/.jupyter/ssl 
+
+COPY /Jupyter/config/jupyter_application_config.py ~/.jupyter/jupyter_application_config.py
+
+# Create the /notebooks directory
+RUN mkdir -p /notebooks
 
 # Expose port for Jupyter Notebook
 EXPOSE 8888
 
 # Set the entrypoint to the script
-CMD ["jupyter", "notebook", "--allow-root", "--notebook-dir=/notebooks"]
+CMD ["jupyter", "notebook", "--config=/root/.jupyter/jupyter_application_config.py", "--allow-root", "--ip=0.0.0.0", "--port=8888","--notebook-dir=/notebooks"]
