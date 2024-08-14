@@ -1,7 +1,9 @@
 # neo4j exclusions
 **/data/*
 **/notebooks/*
+.dockerrc
 *.key
+*.crt
 *.pem
 *.i
 *.ii

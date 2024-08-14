@@ -11,8 +11,8 @@ c.ServerApp.open_browser = False
 
 # Set the paths to the SSL certificate and key
 # Comment these out if you're not using HTTPS directly on Jupyter
-c.ServerApp.certfile = '/root/.jupyter/ssl/jupyter.crt'
-c.ServerApp.keyfile = '/root/.jupyter/ssl/jupyter.key'
+c.ServerApp.certfile = '/home/jupyter/.jupyter/ssl/jupyter.crt'
+c.ServerApp.keyfile = '/home/jupyter/.jupyter/ssl/jupyter.key'
 
 # Set a password
 password = os.environ.get('JUPYTER_PASSWORD', 'default_password')

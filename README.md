@@ -23,7 +23,7 @@ docker-compose run --build
 - CloudFlared registry key on Windows host: [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Application\Cloudflared]
 - To get the dependencies for a particular Python module: `pip show <module_name>`
 - Creating new certificates for TLS: `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./Nginx/certificates/dev.elatedmaniac.io.key -out ./Nginx/certificates/dev.elatedmaniac.io.crt -subj "/C=GR/ST=Attica/L=Athens/O=Olympus/OU=Gods/CN=dev.elatedmaniac.io"`  
-- 
+- Using Mermaid in Drawio: https://www.drawio.com/blog/mermaid-diagrams
 
 ### Security
 
@@ -37,7 +37,8 @@ docker-compose run --build
 ### ML/ AI Datasets and Things I Found Helpful
 
 - StackOverflow dataset: https://archive.org/details/stackexchange
-
+- AI profile search platform: https://theresanaiforthat.com/
+  
 ### Docker Images
 
 - Draw.io: https://hub.docker.com/r/jgraph/drawio

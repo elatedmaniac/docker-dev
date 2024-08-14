@@ -1,56 +1,59 @@
-# Use the official NVIDIA CUDA image as a base
-FROM nvidia/cuda:12.5.0-devel-ubuntu22.04
+# Use a specific CUDA version to avoid unnecessary components
+FROM nvidia/cuda:12.5.0-base-ubuntu22.04
 
 # Set environment variables
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-ENV PATH /opt/conda/bin:$PATH
+ENV PATH /usr/local/bin:$PATH
 
-# Install basic utilities
-RUN apt-get update --fix-missing && apt-get install -y \
+# Install Python and other dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3-pip \
+    python3-venv \
     wget \
-    bzip2 \
-    ca-certificates \
-    curl \
     git \
-    net-tools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Miniconda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && /bin/bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda \
-    && rm Miniconda3-latest-Linux-x86_64.sh
+# Create a non-root user
+RUN useradd -m -s /bin/bash jupyter
 
-# Create a working directory
-WORKDIR /workspace
+# Create a virtual environment and change ownership
+RUN python3 -m venv /opt/venv && chown -R jupyter:jupyter /opt/venv
 
-# Create a conda environment and install necessary packages
-RUN conda install -y python=3.11 \
-    && conda install -y jupyter \
-    && pip install --no-cache-dir \
+# Set environment variable to use venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    jupyter \
+    jupyterlab \
     torch \
     torchvision \
     torchaudio \
     transformers \
-    jupyterlab \
     neo4j \
-    pandas \
-    && apt-get update -y && apt upgrade -y
+    pandas
+
+# Set up Jupyter
+RUN mkdir -p /home/jupyter/.jupyter/ssl /notebooks
+WORKDIR /home/jupyter
 
 # Copy Jupyter configuration and certificates
-RUN jupyter notebook --generate-config
+COPY --chown=jupyter:jupyter /Jupyter/certs/* /home/jupyter/.jupyter/ssl/
+COPY --chown=jupyter:jupyter /Jupyter/config/jupyter_application_config.py /home/jupyter/.jupyter/jupyter_notebook_config.py
 
-RUN mkdir ~/.jupyter/ssl
+# Ensure jupyter user has write access to necessary directories
+RUN chmod 755 /home/jupyter/.jupyter
 
-COPY /Jupyter/certs/* /root/.jupyter/ssl 
+# Set working directory
+WORKDIR /notebooks
 
-COPY /Jupyter/config/jupyter_application_config.py ~/.jupyter/jupyter_application_config.py
-
-# Create the /notebooks directory
-RUN mkdir -p /notebooks
-
+# Switch to the jupyter user
+USER jupyter
 # Expose port for Jupyter Notebook
 EXPOSE 8888
 
 # Set the entrypoint to the script
-CMD ["jupyter", "notebook", "--config=/root/.jupyter/jupyter_application_config.py", "--allow-root", "--ip=0.0.0.0", "--port=8888","--notebook-dir=/notebooks"]
+CMD ["jupyter", "notebook", "--config=/home/jupyter/.jupyter/jupyter_notebook_config.py", "--no-browser", "--ip=0.0.0.0", "--port=8888", "--notebook-dir=/notebooks"]
