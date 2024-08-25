@@ -12,17 +12,39 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     wget \
     git \
+    openssl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
 RUN useradd -m -s /bin/bash jupyter
 
+# Create necessary directories
+RUN mkdir -p /home/jupyter/.jupyter/ssl /notebooks
+
 # Create a virtual environment and change ownership
 RUN python3 -m venv /opt/venv && chown -R jupyter:jupyter /opt/venv
 
 # Set environment variable to use venv
 ENV PATH="/opt/venv/bin:$PATH"
+
+# Set up Jupyter
+WORKDIR /home/jupyter
+
+# Change ownership of Jupyter directories
+RUN chown -R jupyter:jupyter /home/jupyter/.jupyter /notebooks
+
+# Copy Jupyter configuration and certificates
+COPY --chown=jupyter:jupyter Jupyter/config/jupyter_application_config.py /home/jupyter/.jupyter/
+
+COPY --chown=jupyter:jupyter Jupyter/certs /home/jupyter/.jupyter/ssl
+
+# Ensure jupyter user has write access to necessary directories
+RUN chmod 700 /home/jupyter/.jupyter && \
+    chmod 600 /home/jupyter/.jupyter/*
+
+# Switch to the jupyter user
+USER jupyter
 
 # Install Python packages
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -36,24 +58,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
     neo4j \
     pandas
 
-# Set up Jupyter
-RUN mkdir -p /home/jupyter/.jupyter/ssl /notebooks
-WORKDIR /home/jupyter
-
-# Copy Jupyter configuration and certificates
-COPY --chown=jupyter:jupyter /Jupyter/certs/* /home/jupyter/.jupyter/ssl/
-COPY --chown=jupyter:jupyter /Jupyter/config/jupyter_application_config.py /home/jupyter/.jupyter/jupyter_notebook_config.py
-
-# Ensure jupyter user has write access to necessary directories
-RUN chmod 755 /home/jupyter/.jupyter
-
 # Set working directory
 WORKDIR /notebooks
 
-# Switch to the jupyter user
-USER jupyter
 # Expose port for Jupyter Notebook
 EXPOSE 8888
 
 # Set the entrypoint to the script
-CMD ["jupyter", "notebook", "--config=/home/jupyter/.jupyter/jupyter_notebook_config.py", "--no-browser", "--ip=0.0.0.0", "--port=8888", "--notebook-dir=/notebooks"]
+CMD ["jupyter", "notebook", "--config=/home/jupyter/.jupyter/jupyter_application_config.py", "--no-browser", "--ip=0.0.0.0", "--port=8888", "--notebook-dir=/notebooks"]
