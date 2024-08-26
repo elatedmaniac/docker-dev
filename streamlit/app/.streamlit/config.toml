@@ -1,9 +1,3 @@
-[theme]
-primaryColor = "#00FFFF"
-backgroundColor = "#111111"
-secondaryBackgroundColor = "#222222"
-textColor = "#00FFFF"
-
 [server]
 enableXsrfProtection = true
 #sslCertFile = '/path/to/certchain.pem'

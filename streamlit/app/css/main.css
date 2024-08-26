@@ -1,19 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap'); 
-
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 @font-face {
     font-family: 'cyberpunk';
     src: url('../fonts/CyberwayRiders.ttf') format('truetype');
     font-weight: normal;
-    font-style: normal;
+}
+
+*, h1, h2,h3 {
+    font-family: "Share Tech Mono", monospace;
 }
 
 body {
-    font-family: "Share+Tech+Mono", monospace;
-    color: #0ff;
+    color: rgb(8, 168, 93);
     background-color: #111;
 }
 
@@ -29,14 +27,14 @@ body {
 }
 
 .stButton > button {
-    font-family: 'cyberpunk', sans-serif;
+    font-family: "Share Tech Mono", monospace;
     color: #111;
     background-color: #0ff;
     border: 2px solid #0aa;
 }
 
 .stSelectbox {
-    font-family: 'cyberpunk', sans-serif;
+    font-family: "Share Tech Mono", monospace;
     color: #0ff;
 }
 
@@ -46,11 +44,11 @@ body {
 }
 
 .css-145kmo2 {
-    font-family: 'cyberpunk', sans-serif;
+    font-family: "Share Tech Mono", monospace;
     color: #0ff;
 }
 
 .css-1aehpvj {
-    font-family: 'cyberpunk', sans-serif;
+    font-family: "Share Tech Mono", monospace;
     color: #0aa;
 }
