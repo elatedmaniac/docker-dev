@@ -97,16 +97,29 @@ initialize_session_state()
 set_png_as_page_bg('img/city.jpg')
 # Sidebar for model selection & parameter input
 with st.sidebar:
+    st.write(f'''
+             <a target="_self" href="https://elatedmaniac.io">
+        <button class="btn">Home</button>
+    </a>
+    <a target="_self" href="https://dev.elatedmaniac.io/jupyter">
+        <button class="btn">Jupyter</button>
+    </a>
+    <a target="_self" href="https://dev.elatedmaniac.io/drawio">
+        <button class="btn">Drawio</button>
+    </a>
+    ''', 
+    unsafe_allow_html=True)
     st.markdown("## Model Connection")
     models = [model["name"] for model in phi3_client.list()["models"]]
     # AI model selection
     st.session_state['model'] = st.sidebar.selectbox("Select Model", models)
 
-    st.session_state['temp'] = st.slider("Temperature", min_value=0.0, max_value=1.0,step=0.1, value=0.5)
+    st.session_state['temp'] = st.slider("Temperature", min_value=0.0, max_value=1.0,step=0.1, value=0.1, help="Temperature controls the randomness of the output.")
     
-    st.session_state['minP'] = st.slider("Min. P", min_value=0.0, max_value=1.0,step=0.1, value=0.1)
+    st.session_state['minP'] = st.slider("Min. P", min_value=0.0, max_value=1.0,step=0.1, value=0.1, help="Minimum % value a token must reach to be considered during sampling.")
     
-    st.session_state['topk'] = st.slider("Top K", min_value=0, max_value=250,step=2, value=10)
+    st.session_state['topk'] = st.slider("Top K", min_value=0, max_value=250,step=2, value=10, help="Top K controls the number of most likely tokens to consider for generation.")
+    
     
    
 with st.container():
@@ -118,7 +131,6 @@ st.markdown("## Models. Online.")
 messages = st.container()
 prompt_form = st.form("prompt-form",clear_on_submit=True)
 
-       
 # Display chat messages
 
 for message in st.session_state.messages:
@@ -133,7 +145,7 @@ for message in st.session_state.messages:
 with prompt_form:
     cols = st.columns((6,1),vertical_alignment="center")
     cols[0].text_input("Prompt", placeholder="Enter your prompt:", key="user_input",label_visibility="collapsed")
-    cols[1].form_submit_button("🔄", type="primary", on_click=onclick_callback)
+    cols[1].form_submit_button("Submit", type="primary", on_click=onclick_callback)
 
 
 

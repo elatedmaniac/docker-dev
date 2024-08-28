@@ -27,7 +27,8 @@ docker-compose run --build
 - Creating new certificates for TLS: `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./Nginx/certificates/dev.elatedmaniac.io.key -out ./Nginx/certificates/dev.elatedmaniac.io.crt -subj "/C=GR/ST=Attica/L=Athens/O=Olympus/OU=Gods/CN=dev.elatedmaniac.io"`  
 - Using Mermaid in Drawio: https://www.drawio.com/blog/mermaid-diagrams
 - [Converting fonts to other formats](https://transfonter.org/)
-
+- [Button styling](https://uiverse.io/cssbuttons-io/friendly-dragon-76)
+  
 ### Security
 
 - OAuth + Jupyter: https://tljh.jupyter.org/en/latest/howto/auth/google.html
