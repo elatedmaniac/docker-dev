@@ -1,3 +1,7 @@
+[theme]
+base="dark"
+primaryColor="#FFFC4B"
+
 [server]
 enableXsrfProtection = true
 #sslCertFile = '/path/to/certchain.pem'
