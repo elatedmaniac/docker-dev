@@ -4,7 +4,7 @@ FROM nvidia/cuda:12.5.0-base-ubuntu22.04
 # Set environment variables
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /usr/local/bin:$PATH
-
+ENV TINI_VERSION v0.6.0
 # Install Python and other dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 \
@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     git \
     openssl \
+    tini \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,8 +37,8 @@ RUN chown -R jupyter:jupyter /home/jupyter/.jupyter /notebooks
 
 # Copy Jupyter configuration and certificates
 COPY --chown=jupyter:jupyter Jupyter/config/jupyter_application_config.py /home/jupyter/.jupyter/
-
 COPY --chown=jupyter:jupyter Jupyter/certs /home/jupyter/.jupyter/ssl
+COPY --chown=jupyter:jupyter scripts/entrypoint-anaconda.sh /home/jupyter/
 
 # Ensure jupyter user has write access to necessary directories
 RUN chmod 700 /home/jupyter/.jupyter && \
@@ -46,17 +47,14 @@ RUN chmod 700 /home/jupyter/.jupyter && \
 # Switch to the jupyter user
 USER jupyter
 
+# Copy requirements.txt
+COPY --chown=jupyter:jupyter Jupyter/requirements.txt /home/jupyter/
+
 # Install Python packages
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir \
-    jupyter \
-    jupyterlab \
-    torch \
-    torchvision \
-    torchaudio \
-    transformers \
-    neo4j \
-    pandas
+    pip install --no-cache-dir -r requirements.txt
+
+RUN jt -t chesterish -f ubuntu -fs 16 -cellw 80%
 
 # Set working directory
 WORKDIR /notebooks
@@ -64,5 +62,5 @@ WORKDIR /notebooks
 # Expose port for Jupyter Notebook
 EXPOSE 8888
 
+ENTRYPOINT ["tini","--", "/home/jupyter/entrypoint-anaconda.sh"]
 # Set the entrypoint to the script
-CMD ["jupyter", "notebook", "--config=/home/jupyter/.jupyter/jupyter_application_config.py", "--no-browser", "--ip=0.0.0.0", "--port=8888", "--notebook-dir=/notebooks"]

@@ -11,7 +11,14 @@ done
 
 ollama create $MODEL -f /Modelfile
 # Run ollama run phi3:medium
-ollama run $MODEL &
+
+
+if [ "$MODEL" == "nomic-embed-text" ]; then
+    curl http://localhost:11434/api/embeddings -d "{\"model\": \"$MODEL\", \"keep_alive\": \"-1m\"}" &
+else
+    ollama run $MODEL &
+    curl http://localhost:11434/api/generate -d "{\"model\": \"$MODEL\", \"keep_alive\": \"-1m\"}" &
+fi 
 
 # Keep the container running
 tail -f /dev/null

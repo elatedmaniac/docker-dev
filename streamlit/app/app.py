@@ -7,7 +7,6 @@ from llama_index.core.llms import ChatMessage
 #import streamlit.components.v1 as components
 from streamlit_extras.stylable_container import stylable_container
 # Custom CSS for cyberpunk theme
-
 import base64
 
 @st.cache_data()
@@ -30,8 +29,6 @@ def set_png_as_page_bg(img):
     ''' % bin_str
     
     st.markdown(page_bg_img, unsafe_allow_html=True)
-    
-phi3_client = ollama.Client(host='http://phi3:11434')
 
 # Initialize session state for chat history
 def initialize_session_state():
@@ -48,8 +45,20 @@ def initialize_session_state():
 # Function to generate response based on selected AI model
 def generate_response(prompt):
     response = ""
+    domain = ""
     response_placeholder = st.empty()
-    for chunk in phi3_client.chat(model=st.session_state['model'], 
+    if st.session_state['model'] == 'phi3:3.8b':
+        domain = "phi3"
+    elif st.session_state['model'] == "nomic-embed-text:latest":
+        domain = "embeddings"
+        client = ollama.Client(host=f'http://{domain}:11434')
+        response = client.embeddings(model="nomic-embed-text", prompt=prompt)
+     
+        return response['embedding']
+    else:
+        domain = "codegemma"
+    client = ollama.Client(host=f'http://{domain}:11434')
+    for chunk in client.chat(model=st.session_state['model'], 
                               messages=[{'role': 'user', 'content': prompt}], 
                               stream=True,options={"temperature": st.session_state['temp'], 
                                                    "top_k": st.session_state['topk'], 
@@ -101,16 +110,21 @@ with st.sidebar:
              <a target="_self" href="https://elatedmaniac.io">
         <button class="btn">Home</button>
     </a>
-    <a target="_self" href="https://dev.elatedmaniac.io/jupyter">
+    <a target="_self" href="https://jupyter.elatedmaniac.io/tree">
         <button class="btn">Jupyter</button>
     </a>
     <a target="_self" href="https://dev.elatedmaniac.io/drawio">
         <button class="btn">Drawio</button>
     </a>
+    <a target="_self" href="https://dev.elatedmaniac.io/neo4j">
+        <button class="btn">Neo4j</button>
+    </a>
     ''', 
     unsafe_allow_html=True)
     st.markdown("## Model Connection")
+    phi3_client = ollama.Client(host='http://phi3:11434')
     models = [model["name"] for model in phi3_client.list()["models"]]
+    
     # AI model selection
     st.session_state['model'] = st.sidebar.selectbox("Select Model", models)
 
@@ -119,7 +133,6 @@ with st.sidebar:
     st.session_state['minP'] = st.slider("Min. P", min_value=0.0, max_value=1.0,step=0.1, value=0.1, help="Minimum % value a token must reach to be considered during sampling.")
     
     st.session_state['topk'] = st.slider("Top K", min_value=0, max_value=250,step=2, value=10, help="Top K controls the number of most likely tokens to consider for generation.")
-    
     
    
 with st.container():

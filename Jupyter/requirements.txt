@@ -1,0 +1,8 @@
+jupyter 
+jupyterlab 
+torch 
+torchvision 
+transformers 
+neo4j 
+pandas
+jupyterthemes
