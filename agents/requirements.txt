@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+langchain
+pymongo
+chromadb
+python-dotenv
+httpx

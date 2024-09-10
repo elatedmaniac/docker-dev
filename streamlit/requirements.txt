@@ -1,8 +1,10 @@
 streamlit 
 streamlit-extras
-openai>=1.0.0 
-anthropic 
 llama-index
 llama-index-llms-ollama 
 ollama
 langchain
+pymongo
+chromadb
+python-dotenv
+httpx

@@ -4,7 +4,11 @@ import time
 import ollama
 from llama_index.llms.ollama import Ollama
 from llama_index.core.llms import ChatMessage
-#import streamlit.components.v1 as components
+import streamlit.components.v1 as components
+import httpx
+import os
+from typing import Literal
+
 from streamlit_extras.stylable_container import stylable_container
 # Custom CSS for cyberpunk theme
 import base64
@@ -49,15 +53,10 @@ def generate_response(prompt):
     response_placeholder = st.empty()
     if st.session_state['model'] == 'phi3:3.8b':
         domain = "phi3"
-    elif st.session_state['model'] == "nomic-embed-text:latest":
-        domain = "embeddings"
-        client = ollama.Client(host=f'http://{domain}:11434')
-        response = client.embeddings(model="nomic-embed-text", prompt=prompt)
-     
-        return response['embedding']
     else:
         domain = "codegemma"
     client = ollama.Client(host=f'http://{domain}:11434')
+    
     for chunk in client.chat(model=st.session_state['model'], 
                               messages=[{'role': 'user', 'content': prompt}], 
                               stream=True,options={"temperature": st.session_state['temp'], 
@@ -87,7 +86,6 @@ def set_custom_slider_styles():
     .stSlider > div > div > div > div {
         background-color: #ffffff !important;
     }
-
     
     /* Change the color of the slider label */
     .stSlider > div > div > div > div > div > div {
@@ -116,7 +114,7 @@ with st.sidebar:
     <a target="_self" href="https://dev.elatedmaniac.io/drawio">
         <button class="btn">Drawio</button>
     </a>
-    <a target="_self" href="https://dev.elatedmaniac.io/neo4j">
+    <a target="_self" href="https://neo4j.elatedmaniac.io/">
         <button class="btn">Neo4j</button>
     </a>
     ''', 
@@ -134,7 +132,9 @@ with st.sidebar:
     
     st.session_state['topk'] = st.slider("Top K", min_value=0, max_value=250,step=2, value=10, help="Top K controls the number of most likely tokens to consider for generation.")
     
-   
+    #iframe_src = "https://open.spotify.com/embed/track/59BweHnnNQc5Y55WO30JuK?utm_source=generator"
+    #components.iframe(iframe_src)
+    
 with st.container():
   
     st.markdown("## Welcome to the AI Pod!")

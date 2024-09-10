@@ -6,3 +6,5 @@ transformers
 neo4j 
 pandas
 jupyterthemes
+langchain-ollama
+jupyter_contrib_nbextensions

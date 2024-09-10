@@ -15,6 +15,7 @@ services:
     environment:
       - PUBLIC_DNS=drawio.elatedmaniac.io
       - LETS_ENCRYPT_ENABLED=true
+    restart: unless-stopped
     networks:
       default:
         ipv4_address: 172.18.0.3
@@ -37,6 +38,7 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
+    restart: unless-stopped
     networks:
       default:
         ipv4_address: 172.18.0.4
@@ -58,6 +60,7 @@ services:
       - ./neo4j/import:/import
       - ./neo4j/plugins:/plugins
       - ./neo4j/certificates:/var/lib/neo4j/certificates
+    restart: unless-stopped
     networks:
       default:
         ipv4_address: 172.18.0.5
@@ -83,11 +86,18 @@ services:
       context: .
       dockerfile: streamlit/Dockerfile
     container_name: streamlit
+    environment:
+      - PHI3_AGENT_URL=http://phi3_agent:8000
+      - CODEGEMMA_AGENT_URL=http://codegemma_agent:8000
     ports:
       - "8501:8501"
     volumes:
       - ./streamlit/app:/app
       - ./streamlit/app/.streamlit:/root/.streamlit 
+    restart: unless-stopped
+    depends_on:
+      - phi3_agent
+      - codegemma_agent
     networks:
       default:
         ipv4_address: 172.18.0.7
@@ -103,6 +113,7 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
+    restart: unless-stopped
     networks:
       default:
         ipv4_address: 172.18.0.8
@@ -159,7 +170,7 @@ services:
   embeddings:
     build:
       context: .
-      dockerfile: embeddings/Dockerfile
+      dockerfile: ollama/Dockerfile
       args:
       - MODEL=${MODEL:-nomic-embed-text} 
     container_name: embeddings
@@ -181,6 +192,35 @@ services:
     networks:
       default:
         ipv4_address: 172.18.0.11
+  phi3_agent:
+    build:
+      context: ./agents
+      dockerfile: phi3/Dockerfile
+    container_name: phi3_agent
+    ports:
+      - "8001:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://phi3:11434
+    depends_on:
+      - phi3
+    networks:
+      default:
+        ipv4_address: 172.18.0.12
+
+  codegemma_agent:
+    build:
+      context: ./agents
+      dockerfile: codegemma/Dockerfile
+    container_name: codegemma_agent
+    ports:
+      - "8002:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://codegemma:11435
+    depends_on:
+      - codegemma
+    networks:
+      default:
+        ipv4_address: 172.18.0.13
 volumes:
   postgres-db-volume:
 networks:

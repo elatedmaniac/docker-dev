@@ -1,5 +1,12 @@
 # README
 
+TODO:
+
+- Create volumes for Codegemma & Phi3 RAG
+- Finish fleshing out agentic logic via LangChain in Streamlit app.py
+- Rework password & auth
+- Add in RBAC
+
 ## Overview
 
 This project is aimed at creating a local, Dockerized environment for ML and DevOps projects. In order to maintain a robust security posture, I intend to integrate +1 of the following: [Renovate](https://github.com/renovatebot/renovate), [DependaBot](https://github.com/dependabot/dependabot-core), [Trivy](https://github.com/aquasecurity/trivy), and [Copa](https://github.com/project-copacetic/copacetic)

@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     wget \
     git \
+    sudo \
     openssl \
     tini \
     && apt-get clean \
@@ -20,8 +21,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Create a non-root user
 RUN useradd -m -s /bin/bash jupyter
 
+
 # Create necessary directories
-RUN mkdir -p /home/jupyter/.jupyter/ssl /notebooks
+RUN mkdir -p /home/jupyter/.jupyter/ssl /notebooks /home/jupyter/.jupyter/lab/user-settings/@jupyterlab/apputils-extension
 
 # Create a virtual environment and change ownership
 RUN python3 -m venv /opt/venv && chown -R jupyter:jupyter /opt/venv
@@ -39,7 +41,9 @@ RUN chown -R jupyter:jupyter /home/jupyter/.jupyter /notebooks
 COPY --chown=jupyter:jupyter Jupyter/config/jupyter_application_config.py /home/jupyter/.jupyter/
 COPY --chown=jupyter:jupyter Jupyter/certs /home/jupyter/.jupyter/ssl
 COPY --chown=jupyter:jupyter scripts/entrypoint-anaconda.sh /home/jupyter/
+COPY --chown=jupyter:jupyter Jupyter/overrides.json /opt/venv/share/jupyter/lab/settings/overrides.json
 
+RUN chown -R jupyter:jupyter /opt/venv
 # Ensure jupyter user has write access to necessary directories
 RUN chmod 700 /home/jupyter/.jupyter && \
     chmod 600 /home/jupyter/.jupyter/*
