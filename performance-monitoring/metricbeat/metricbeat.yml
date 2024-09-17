@@ -1,0 +1,45 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+setup.kibana:
+  host: "kibana:5601"
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: "elastic"
+  password: "changeme"  # Replace with your Elasticsearch password
+
+processors:
+  - add_cloud_metadata: ~
+
+metricbeat.modules:
+  - module: system
+    metricsets:
+      - cpu
+      - memory
+      - network
+      - process
+      - process_summary
+      - diskio
+      - filesystem
+      - fsstat
+    enabled: true
+    period: 10s
+    processes: ['.*']
+    hostfs: "/hostfs"
+
+  - module: docker
+    metricsets:
+      - container
+      - cpu
+      - diskio
+      - healthcheck
+      - info
+      - memory
+      - network
+    enabled: true
+    period: 10s
+    hosts: ["unix:///var/run/docker.sock"]
+    # If using Windows containers, adjust the socket path accordingly
+    # hosts: ["npipe:////./pipe/docker_engine"]

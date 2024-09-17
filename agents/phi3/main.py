@@ -6,7 +6,7 @@ from langchain.tools import Tool
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import CharacterTextSplitter
 import os
 
@@ -19,7 +19,7 @@ class Query(BaseModel):
 llm = Ollama(base_url=os.getenv("OLLAMA_BASE_URL", "http://phi3:11434"), model="phi3")
 
 # Initialize vector store (this is a simple example, you might want to persist this)
-loader = TextLoader("path/to/your/document.txt")
+loader = TextLoader("data/")
 documents = loader.load()
 text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 texts = text_splitter.split_documents(documents)

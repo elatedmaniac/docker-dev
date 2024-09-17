@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   cloudflared:
@@ -199,6 +199,8 @@ services:
     container_name: phi3_agent
     ports:
       - "8001:8000"
+    volumes:
+      - ./agents/phi3/data:/app/data
     environment:
       - OLLAMA_BASE_URL=http://phi3:11434
     depends_on:
@@ -214,6 +216,8 @@ services:
     container_name: codegemma_agent
     ports:
       - "8002:8000"
+    volumes:
+      - ./agents/codegemma/data:/app/data
     environment:
       - OLLAMA_BASE_URL=http://codegemma:11435
     depends_on:
@@ -221,8 +225,102 @@ services:
     networks:
       default:
         ipv4_address: 172.18.0.13
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./performance-monitoring/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: 172.18.0.14
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      #- xpack.security.enabled=true
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      default:
+        ipv4_address: 172.18.0.15
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.9
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      default:
+        ipv4_address: 172.18.0.16
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.9
+    container_name: filebeat
+    user: root
+    volumes:
+      - type: bind
+        source: 'C:/ProgramData/Docker/containers'
+        target: '/var/lib/docker/containers'
+        read_only: true
+      - type: bind
+        source: './filebeat/filebeat.yml'
+        target: '/usr/share/filebeat/filebeat.yml'
+        read_only: true
+    depends_on:
+      - elasticsearch
+    command: ["--strict.perms=false"]
+    networks:
+      default:
+        ipv4_address: 172.18.0.17
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:7.17.9
+    container_name: metricbeat
+    user: root
+    volumes:
+      - type: bind
+        source: './performance-monitoring/metricbeat/metricbeat.yml'
+        target: '/usr/share/metricbeat/metricbeat.yml'
+        read_only: true
+      - type: bind
+        source: '//var/run/docker.sock'
+        target: '/var/run/docker.sock'
+      - type: bind
+        source: 'C:/ProgramData/docker/containers'
+        target: '/hostfs/var/lib/docker/containers'
+        read_only: true
+      - type: bind
+        source: 'C:/'
+        target: '/hostfs/c'
+        read_only: true
+    depends_on:
+      - elasticsearch
+    command: ["--strict.perms=false"]
+    networks:
+      default:
+        ipv4_address: 172.18.0.20
+
 volumes:
+  esdata:
+    driver: local
   postgres-db-volume:
+
 networks:
   default:
     driver: bridge

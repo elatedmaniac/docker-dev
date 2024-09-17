@@ -1,7 +1,9 @@
 fastapi
 uvicorn
 langchain
+langchain-community
 pymongo
 chromadb
 python-dotenv
 httpx
+watchdog

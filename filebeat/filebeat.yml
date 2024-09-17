@@ -1,0 +1,15 @@
+filebeat.inputs:
+  - type: container
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+    processors:
+      - add_docker_metadata: ~
+    exclude_files: ['filebeat']
+
+output.elasticsearch:
+  hosts: ['elasticsearch:9200']
+  username: 'elastic'
+  password: 'changeme'  # Replace with your Elasticsearch password
+
+setup.kibana:
+  host: 'kibana:5601'
