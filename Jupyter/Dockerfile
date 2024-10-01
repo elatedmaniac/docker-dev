@@ -12,9 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     wget \
     git \
+    tini \
     sudo \
     openssl \
-    tini \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,21 +38,23 @@ WORKDIR /home/jupyter
 RUN chown -R jupyter:jupyter /home/jupyter/.jupyter /notebooks
 
 # Copy Jupyter configuration and certificates
-COPY --chown=jupyter:jupyter Jupyter/config/jupyter_application_config.py /home/jupyter/.jupyter/
-COPY --chown=jupyter:jupyter Jupyter/certs /home/jupyter/.jupyter/ssl
-COPY --chown=jupyter:jupyter scripts/entrypoint-anaconda.sh /home/jupyter/
-COPY --chown=jupyter:jupyter Jupyter/overrides.json /opt/venv/share/jupyter/lab/settings/overrides.json
+COPY Jupyter/config/jupyter_application_config.py /home/jupyter/.jupyter/
+COPY Jupyter/certs /home/jupyter/.jupyter/ssl
+COPY Jupyter/overrides.json /opt/venv/share/jupyter/lab/settings/overrides.json
+COPY --chown=jupyter:jupyter scripts/entrypoint-anaconda.sh /home/jupyter/entrypoint-anaconda.sh
 
 RUN chown -R jupyter:jupyter /opt/venv
 # Ensure jupyter user has write access to necessary directories
 RUN chmod 700 /home/jupyter/.jupyter && \
     chmod 600 /home/jupyter/.jupyter/*
 
+RUN chmod +x /home/jupyter/entrypoint-anaconda.sh
+
 # Switch to the jupyter user
 USER jupyter
 
 # Copy requirements.txt
-COPY --chown=jupyter:jupyter Jupyter/requirements.txt /home/jupyter/
+COPY Jupyter/requirements.txt /home/jupyter/
 
 # Install Python packages
 RUN pip install --no-cache-dir --upgrade pip && \
