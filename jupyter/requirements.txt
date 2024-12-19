@@ -1,0 +1,11 @@
+jupyter 
+jupyterlab 
+neo4j 
+ollama
+pandas
+jupyterthemes
+langchain-ollama
+langchain-community
+langchain-core
+langchain
+jupyter_contrib_nbextensions

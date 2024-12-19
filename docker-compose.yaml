@@ -21,23 +21,23 @@ services:
   anaconda:
     build:
       context: .
-      dockerfile: Jupyter/Dockerfile
+      dockerfile: jupyter/Dockerfile
+      args:
+        CERTIFICATE_OU: ${CERTIFICATE_OU}
     container_name: anaconda_container
     volumes:
-      - ./Jupyter/certs:/home/jupyter/.jupyter/ssl
-      - ./Jupyter/data:/workspace
-      - ./Jupyter/config/jupyter_application_config.py/:/home/jupyter/.jupyter/jupyter_application_config.py
-      - ./logs:/workspace/logs
+      - ./jupyter/data:/workspace/data
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - JUPYTER_PASSWORD=${JUPYTER_PASSWORD}
+      - CERTIFICATE_OU=${CERTIFICATE_OU}
     deploy:
       resources:
         reservations:
           devices:
             - capabilities: [gpu]
-    restart: unless-stopped
+    #restart: unless-stopped
     networks:
       default:
         ipv4_address: 172.18.0.4
@@ -46,30 +46,30 @@ services:
       context: ./neo4j
       args:
         NEO4J_AUTH: ${NEO4J_AUTH}
+        CERTIFICATE_OU: ${CERTIFICATE_OU}
     container_name: neo4j_container
     environment:
       - NEO4J_AUTH=${NEO4J_AUTH}
       - NEO4J_PLUGINS=${NEO4J_PLUGINS}
+      - CERTIFICATE_OU=${CERTIFICATE_OU}
     volumes:
       - ./neo4j/logs:/logs
       - ./neo4j/import:/import
       - ./neo4j/plugins:/plugins
-      - ./neo4j/certificates:/var/lib/neo4j/certificates
     restart: unless-stopped
     networks:
       default:
         ipv4_address: 172.18.0.5
-
   nginx:
     build:
       context: .
-      dockerfile: Nginx/Dockerfile
+      dockerfile: nginx/Dockerfile
     container_name: nginx_proxy
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./Nginx/certificates:/etc/nginx/certificates
+    # volumes:
+    #   - ./nginx/certificates:/etc/nginx/certificates
     depends_on:
       - anaconda
       - drawio
@@ -83,35 +83,20 @@ services:
       dockerfile: streamlit/Dockerfile
     container_name: streamlit
     environment:
-      - PHI3_AGENT_URL=http://rag_agent:8000
-      - CODEGEMMA_AGENT_URL=http://rag_agent:8000
+      - PHI3_AGENT_URL=http://phi3:11434
+      - CODEGEMMA_AGENT_URL=http://codegemma:11434
     ports:
       - "8501:8501"
     volumes:
       - ./streamlit/app:/app
       - ./streamlit/app/.streamlit:/root/.streamlit 
-    restart: unless-stopped
     depends_on:
-      - rag_agent
+      - phi3
+      - codegemma
+    restart: unless-stopped
     networks:
       default:
         ipv4_address: 172.18.0.7
-  postgres:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
-    volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
-      interval: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.18.0.8
   phi3:
     build:
       context: .
@@ -187,34 +172,6 @@ services:
     networks:
       default:
         ipv4_address: 172.18.0.11
-  rag_agent:
-    build:
-      context: ./agent
-      dockerfile: Dockerfile
-    container_name: rag_agent
-    ports:
-      - "8001:8000"
-    volumes:
-      - ./agent/data:/app/data
-    depends_on:
-      - phi3
-      - codegemma
-    networks:
-      default:
-        ipv4_address: 172.18.0.12
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./performance-monitoring/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
-    restart: unless-stopped
-    networks:
-      default:
-        ipv4_address: 172.18.0.14
-volumes:
-  postgres-db-volume:
 
 networks:
   default:
